@@ -1,0 +1,207 @@
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Star } from "lucide-react";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+
+const categories = [
+  "Sửa điện", "Dọn nhà", "Lắp thiết bị", "Thiết kế", "Marketing", "Gia sư", "Chạy quảng cáo", "Chăm sóc thú cưng"
+];
+
+const provinces = ["TP.HCM", "Hà Nội", "Đà Nẵng", "Cần Thơ", "Khác"];
+
+const tasks = [
+  {
+    id: 1,
+    title: "Cần người sửa ổ điện trong phòng khách",
+    location: "Quận 1, TP.HCM",
+    category: "Sửa điện",
+    price: "300.000đ",
+    contact: "https://zalo.me/123456789",
+    rating: 4.5,
+    detail: "Ổ điện trong phòng khách bị chập, cần người kiểm tra và thay ổ mới.",
+    history: "Giao việc"
+  },
+  {
+    id: 2,
+    title: "Dọn nhà 2 tầng cuối tuần này",
+    location: "Hà Nội",
+    category: "Dọn nhà",
+    price: "500.000đ",
+    contact: "https://zalo.me/987654321",
+    rating: 4.8,
+    detail: "Nhà 2 tầng khoảng 100m², cần dọn vào thứ 7 tuần này từ 9h sáng.",
+    history: "Đã nhận"
+  },
+  {
+    id: 3,
+    title: "Thiết kế logo cho tiệm bánh",
+    location: "Online",
+    category: "Thiết kế",
+    price: "1.000.000đ",
+    contact: "https://zalo.me/1122334455",
+    rating: 5.0,
+    detail: "Cần thiết kế logo đơn giản, hiện đại cho tiệm bánh online. Có cảm hứng tham khảo.",
+    history: "Giao việc"
+  },
+];
+
+export default function TaskRabbitVN() {
+  const [search, setSearch] = useState("");
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [provinceFilter, setProvinceFilter] = useState("");
+  const [showAccount, setShowAccount] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
+
+  const filteredTasks = tasks.filter((task) => {
+    const matchSearch = task.title.toLowerCase().includes(search.toLowerCase());
+    const matchCategory = categoryFilter ? task.category === categoryFilter : true;
+    const matchProvince = provinceFilter ? task.location.includes(provinceFilter) : true;
+    return matchSearch && matchCategory && matchProvince;
+  });
+
+  const accountTasks = tasks.filter(task => task.history);
+
+  return (
+    <div className="p-6 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold mb-4 text-center">NhuCau.com – Kết nối người cần và người giải quyết</h1>
+
+      <div className="flex justify-end gap-2 mb-4">
+        <Button variant="outline" onClick={() => setShowAccount(true)}>Tài khoản của tôi</Button>
+        <Button>Đăng xuất</Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Input
+          placeholder="Tìm nhu cầu..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <Select onValueChange={(val) => setCategoryFilter(val)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn danh mục" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((cat, idx) => (
+              <SelectItem key={idx} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select onValueChange={(val) => setProvinceFilter(val)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn tỉnh/thành" />
+          </SelectTrigger>
+          <SelectContent>
+            {provinces.map((p, idx) => (
+              <SelectItem key={idx} value={p}>{p}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="mb-6 text-center">
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>+ Đăng nhu cầu mới</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <h2 className="text-lg font-bold mb-4">Đăng nhu cầu</h2>
+            <Input placeholder="Tiêu đề công việc" className="mb-2" />
+            <Input placeholder="Địa điểm hoặc Online" className="mb-2" />
+            <Input placeholder="Danh mục" className="mb-2" />
+            <Input placeholder="Ngân sách (VD: 500.000đ)" className="mb-2" />
+            <Textarea placeholder="Chi tiết mô tả nhu cầu..." className="mb-2" />
+            <Input placeholder="Link Zalo liên hệ" className="mb-2" />
+            <Button>Gửi</Button>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <div className="grid gap-4">
+        {filteredTasks.map((task) => (
+          <motion.div layout key={task.id}>
+            <Card onClick={() => setSelectedTask(task)} className="shadow-md hover:shadow-lg cursor-pointer">
+              <CardContent className="p-4">
+                <h2 className="font-semibold text-lg">{task.title}</h2>
+                <p className="text-sm text-gray-600">{task.location} • {task.category}</p>
+                <p className="text-primary font-bold mt-2">{task.price}</p>
+                <div className="flex items-center gap-1 mt-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill={i < Math.round(task.rating) ? "#facc15" : "#e5e7eb"} stroke="none" />
+                  ))}
+                  <span className="text-sm text-gray-500">({task.rating})</span>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
+
+      {selectedTask && (
+        <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
+          <DialogContent>
+            <h2 className="text-xl font-bold mb-2">{selectedTask.title}</h2>
+            <p className="text-sm text-gray-600 mb-2">{selectedTask.location} • {selectedTask.category}</p>
+            <p className="mb-2">{selectedTask.detail}</p>
+            <p className="font-bold text-primary mb-2">Ngân sách: {selectedTask.price}</p>
+            <a
+              href={selectedTask.contact}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-blue-600 mb-2"
+            >
+              Liên hệ Zalo
+            </a>
+            <Button variant="secondary" onClick={() => setChatOpen(true)}>Mở Chat</Button>
+            <div className="flex items-center gap-1 mt-3">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={16} fill={i < Math.round(selectedTask.rating) ? "#facc15" : "#e5e7eb"} stroke="none" />
+              ))}
+              <span className="text-sm text-gray-500">({selectedTask.rating})</span>
+            </div>
+            <Textarea
+              className="mt-3"
+              placeholder="Gửi đánh giá sau khi hoàn thành..."
+              value={feedback}
+              onChange={(e) => setFeedback(e.target.value)}
+            />
+            <Button className="mt-2">Gửi đánh giá</Button>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Giả lập Chat */}
+      {chatOpen && (
+        <Dialog open={chatOpen} onOpenChange={setChatOpen}>
+          <DialogContent>
+            <h2 className="text-lg font-bold mb-2">Chat với người đăng việc</h2>
+            <Textarea placeholder="Nhập tin nhắn..." className="mb-2" />
+            <Button>Gửi</Button>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Trang tài khoản */}
+      {showAccount && (
+        <Dialog open={showAccount} onOpenChange={setShowAccount}>
+          <DialogContent>
+            <h2 className="text-xl font-bold mb-4">Tài khoản của tôi</h2>
+            <h3 className="font-semibold mb-2">Lịch sử giao và nhận việc</h3>
+            {accountTasks.map((task) => (
+              <div key={task.id} className="mb-2">
+                <p className="text-sm font-medium">{task.title} • {task.history}</p>
+                <p className="text-sm text-gray-500">{task.location} – {task.price}</p>
+              </div>
+            ))}
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  );
+}
